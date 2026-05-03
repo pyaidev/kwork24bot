@@ -1,4 +1,4 @@
-"""Telegram bot komandalar."""
+"""Команды Telegram бота."""
 import os
 import random
 from datetime import datetime
@@ -16,30 +16,29 @@ def is_admin(message: types.Message) -> bool:
 
 
 def register(dp):
-    """Barcha komandalarni Dispatcher ga ro'yxatdan o'tkazadi."""
 
     @dp.message(Command("start"))
     async def cmd_start(message: types.Message):
         if not is_admin(message):
             return
         await message.answer(
-            "🤖 <b>Kwork Bot Boshqaruv Paneli</b>\n\n"
-            "📋 <b>Komandalar:</b>\n"
-            "/status — Bot holati\n"
-            "/stats — Statistika\n"
-            "/projects — Proektlarni tekshirish\n"
-            "/inbox — Inbox tekshirish\n"
-            "/online — Online ping\n"
-            "/keywords — Kalit so'zlar\n"
-            "/addkw <code>so'z</code> — Kalit so'z qo'shish\n"
-            "/delkw <code>so'z</code> — Kalit so'z o'chirish\n"
-            "/autoresp — AI javob yoqish/o'chirish\n"
-            "/pending — Kutayotgan javoblar\n"
-            "/seo — SEO pozitsiyalar\n"
-            "/cookie — Cookie yangilash\n"
-            "/logs — Loglar\n"
-            "/restart — Brauzerni qayta tushirish\n"
-            "/help — Yordam"
+            "🤖 <b>Панель управления Kwork Bot</b>\n\n"
+            "📋 <b>Команды:</b>\n"
+            "/status — Статус бота\n"
+            "/stats — Статистика\n"
+            "/projects — Проверить проекты\n"
+            "/inbox — Проверить входящие\n"
+            "/online — Онлайн пинг\n"
+            "/keywords — Список ключевых слов\n"
+            "/addkw <code>слово</code> — Добавить ключевое слово\n"
+            "/delkw <code>слово</code> — Удалить ключевое слово\n"
+            "/autoresp — Вкл/выкл AI ответ\n"
+            "/pending — Ожидающие ответы\n"
+            "/seo — SEO позиции\n"
+            "/cookie — Обновить cookie\n"
+            "/logs — Последние логи\n"
+            "/restart — Перезапустить браузер\n"
+            "/help — Помощь"
         )
 
     @dp.message(Command("help"))
@@ -47,15 +46,18 @@ def register(dp):
         if not is_admin(message):
             return
         await message.answer(
-            "ℹ️ <b>Yordam</b>\n\n"
-            "1️⃣ <b>Online tutish</b> — har 7-10 daqiqada\n"
-            "2️⃣ <b>Proekt monitoring</b> — har 5 daqiqada\n"
-            "3️⃣ <b>Inbox monitoring</b> — har 2 daqiqada\n"
-            "4️⃣ <b>Cookie auto-refresh</b> — har 2 soatda\n"
-            "5️⃣ <b>SEO monitoring</b> — har 6 soatda\n\n"
-            "✅ Yuborish — proektga javob\n"
-            "✏️ Narx — narxni o'zgartirish\n"
-            "❌ Bekor — javob yuborilmaydi"
+            "ℹ️ <b>Помощь</b>\n\n"
+            "Бот выполняет 5 задач:\n"
+            "1️⃣ <b>Онлайн</b> — каждые 7-10 мин\n"
+            "2️⃣ <b>Мониторинг проектов</b> — каждые 5 мин\n"
+            "3️⃣ <b>Мониторинг входящих</b> — каждые 2 мин\n"
+            "4️⃣ <b>Обновление cookie</b> — каждые 2 часа\n"
+            "5️⃣ <b>SEO мониторинг</b> — каждые 6 часов\n\n"
+            "🤖 <b>AI ответ:</b>\n"
+            "При новом проекте Claude пишет отклик.\n"
+            "  ✅ Отправить — отправить отклик\n"
+            "  ✏️ Цена — изменить цену\n"
+            "  ❌ Отмена — не отправлять"
         )
 
     @dp.message(Command("status"))
@@ -67,14 +69,14 @@ def register(dp):
             delta = datetime.now() - state.stats["start_time"]
             h, r = divmod(int(delta.total_seconds()), 3600)
             m, _ = divmod(r, 60)
-            uptime = f"{h} soat {m} daqiqa"
+            uptime = f"{h} ч {m} мин"
         await message.answer(
-            f"📊 <b>Bot Holati</b>\n\n"
-            f"Holat: {'🟢 Faol' if state.monitoring_active else '🔴 To''xtagan'}\n"
-            f"AI javob: {'🟢' if state.auto_respond else '🔴'}\n"
-            f"Uptime: {uptime}\n"
-            f"Kalit so'zlar: {len(KEYWORDS)} ta\n"
-            f"Kutayotgan: {len(state.pending_responses)} ta"
+            f"📊 <b>Статус бота</b>\n\n"
+            f"Состояние: {'🟢 Активен' if state.monitoring_active else '🔴 Остановлен'}\n"
+            f"AI ответ: {'🟢 Включён' if state.auto_respond else '🔴 Выключен'}\n"
+            f"Аптайм: {uptime}\n"
+            f"Ключевые слова: {len(KEYWORDS)} шт\n"
+            f"Ожидают ответа: {len(state.pending_responses)} шт"
         )
 
     @dp.message(Command("stats"))
@@ -83,15 +85,15 @@ def register(dp):
             return
         s = state.stats
         await message.answer(
-            f"📈 <b>Statistika</b>\n\n"
-            f"🌐 Online: {s['online_visits']}\n"
-            f"📋 Proektlar: {s['projects_found']}\n"
-            f"📨 Yuborildi: {s['projects_sent']}\n"
-            f"✅ Javob: {s['responses_sent']}\n"
-            f"📬 Inbox: {s['inbox_checks']}\n"
-            f"💬 Xabarlar: {s['new_messages']}\n"
-            f"🍪 Cookie: {s['cookie_refreshes']}\n"
-            f"❌ Xatolar: {s['errors']}"
+            f"📈 <b>Статистика</b>\n\n"
+            f"🌐 Онлайн визиты: {s['online_visits']}\n"
+            f"📋 Проектов найдено: {s['projects_found']}\n"
+            f"📨 Отправлено в TG: {s['projects_sent']}\n"
+            f"✅ Откликов отправлено: {s['responses_sent']}\n"
+            f"📬 Проверок входящих: {s['inbox_checks']}\n"
+            f"💬 Новых сообщений: {s['new_messages']}\n"
+            f"🍪 Обновлений cookie: {s['cookie_refreshes']}\n"
+            f"❌ Ошибок: {s['errors']}"
         )
 
     @dp.message(Command("keywords"))
@@ -99,7 +101,7 @@ def register(dp):
         if not is_admin(message):
             return
         kw_list = "\n".join(f"  {i+1}. <code>{kw}</code>" for i, kw in enumerate(KEYWORDS))
-        await message.answer(f"🔑 <b>Kalit so'zlar ({len(KEYWORDS)} ta):</b>\n\n{kw_list}")
+        await message.answer(f"🔑 <b>Ключевые слова ({len(KEYWORDS)} шт):</b>\n\n{kw_list}")
 
     @dp.message(Command("addkw"))
     async def cmd_addkw(message: types.Message):
@@ -107,12 +109,12 @@ def register(dp):
             return
         args = message.text.split(maxsplit=1)
         if len(args) < 2:
-            return await message.answer("❌ /addkw <code>kalit_so'z</code>")
+            return await message.answer("❌ Формат: /addkw <code>слово</code>")
         kw = args[1].strip().lower()
         if kw in KEYWORDS:
-            return await message.answer(f"⚠️ <code>{kw}</code> allaqachon bor")
+            return await message.answer(f"⚠️ <code>{kw}</code> уже есть")
         KEYWORDS.append(kw)
-        await message.answer(f"✅ <code>{kw}</code> qo'shildi! ({len(KEYWORDS)} ta)")
+        await message.answer(f"✅ <code>{kw}</code> добавлено! Всего: {len(KEYWORDS)} шт")
 
     @dp.message(Command("delkw"))
     async def cmd_delkw(message: types.Message):
@@ -120,37 +122,37 @@ def register(dp):
             return
         args = message.text.split(maxsplit=1)
         if len(args) < 2:
-            return await message.answer("❌ /delkw <code>kalit_so'z</code>")
+            return await message.answer("❌ Формат: /delkw <code>слово</code>")
         kw = args[1].strip().lower()
         if kw not in KEYWORDS:
-            return await message.answer(f"⚠️ <code>{kw}</code> topilmadi")
+            return await message.answer(f"⚠️ <code>{kw}</code> не найдено")
         KEYWORDS.remove(kw)
-        await message.answer(f"🗑 <code>{kw}</code> o'chirildi! ({len(KEYWORDS)} ta)")
+        await message.answer(f"🗑 <code>{kw}</code> удалено! Осталось: {len(KEYWORDS)} шт")
 
     @dp.message(Command("autoresp"))
     async def cmd_autoresp(message: types.Message):
         if not is_admin(message):
             return
         state.auto_respond = not state.auto_respond
-        await message.answer(f"🤖 AI javob: {'🟢 Yoqildi' if state.auto_respond else '🔴 O''chirildi'}")
+        await message.answer(f"🤖 AI ответ: {'🟢 Включён' if state.auto_respond else '🔴 Выключен'}")
 
     @dp.message(Command("projects"))
     async def cmd_projects(message: types.Message):
         if not is_admin(message) or not state.page:
             return
-        await message.answer("🔍 Tekshirilmoqda...")
+        await message.answer("🔍 Проверяю проекты...")
         from app.handlers.callbacks import notify
         count = await kwork.check_all_projects(notify)
-        await message.answer(f"✅ {count} ta yangi proekt topildi.")
+        await message.answer(f"✅ Найдено {count} новых проектов.")
 
     @dp.message(Command("inbox"))
     async def cmd_inbox(message: types.Message):
         if not is_admin(message) or not state.page:
             return
-        await message.answer("📬 Tekshirilmoqda...")
+        await message.answer("📬 Проверяю входящие...")
         from app.handlers.callbacks import notify
         await kwork.check_inbox(notify)
-        await message.answer("✅ Inbox tekshirildi.")
+        await message.answer("✅ Входящие проверены.")
 
     @dp.message(Command("online"))
     async def cmd_online(message: types.Message):
@@ -159,7 +161,7 @@ def register(dp):
         url = random.choice(ONLINE_PAGES)
         await state.page.goto(url, timeout=60_000, wait_until="domcontentloaded")
         state.stats["online_visits"] += 1
-        await message.answer(f"🟢 Online ping: {url}")
+        await message.answer(f"🟢 Онлайн пинг отправлен!\nСтраница: {url}")
 
     @dp.message(Command("pending"))
     async def cmd_pending(message: types.Message):
@@ -167,7 +169,7 @@ def register(dp):
             return
         from app.handlers.callbacks import get_approve_keyboard
         if not state.pending_responses:
-            return await message.answer("📭 Kutayotgan javob yo'q")
+            return await message.answer("📭 Нет ожидающих ответов")
         for pid, data in state.pending_responses.items():
             await message.answer(
                 f"⏳ <b>{data['title']}</b>\n💬 {data['response_text'][:300]}\n💰 {data['price']} ₽",
@@ -179,13 +181,13 @@ def register(dp):
         if not is_admin(message):
             return
         await browser.save_cookies()
-        await message.answer(f"🍪 Cookie yangilandi! ({state.stats['cookie_refreshes']})")
+        await message.answer(f"🍪 Cookie обновлены! Всего обновлений: {state.stats['cookie_refreshes']}")
 
     @dp.message(Command("seo"))
     async def cmd_seo(message: types.Message):
         if not is_admin(message) or not state.page:
             return
-        await message.answer("🔍 SEO tekshirilmoqda...")
+        await message.answer("🔍 Проверяю SEO позиции...")
         result = await kwork.check_seo()
         await message.answer(result)
 
@@ -196,14 +198,14 @@ def register(dp):
         if os.path.exists("bot.log"):
             with open("bot.log") as f:
                 lines = f.readlines()[-15:]
-            await message.answer("📄 <b>Loglar:</b>\n\n" + "\n".join(f"<code>{l.strip()}</code>" for l in lines))
+            await message.answer("📄 <b>Логи:</b>\n\n" + "\n".join(f"<code>{l.strip()}</code>" for l in lines))
         else:
-            await message.answer("📄 Log topilmadi")
+            await message.answer("📄 Лог не найден")
 
     @dp.message(Command("restart"))
     async def cmd_restart(message: types.Message):
         if not is_admin(message):
             return
-        await message.answer("🔄 Qayta ishga tushirilmoqda...")
+        await message.answer("🔄 Перезапуск браузера...")
         await browser.setup()
-        await message.answer("✅ Tayyor!" if state.page else "❌ Xato!")
+        await message.answer("✅ Готово!" if state.page else "❌ Ошибка!")

@@ -41,14 +41,14 @@ async def on_startup():
     scheduler.start_all(callbacks.notify)
 
     await callbacks.notify(
-        "🚀 <b>Kwork Bot ishga tushdi!</b>\n\n"
-        f"🤖 Claude AI: {'🟢' if state.auto_respond else '🔴'}\n"
-        f"🔑 Kalit so'zlar: {len(KEYWORDS)} ta\n"
-        f"🍪 Cookie refresh: 🟢 (2 soat)\n"
-        f"📊 SEO: 🟢 (6 soat)\n"
-        f"📋 /help — komandalar"
+        "🚀 <b>Kwork Bot запущен!</b>\n\n"
+        f"🤖 Claude AI: {'🟢 Вкл' if state.auto_respond else '🔴 Выкл'}\n"
+        f"🔑 Ключевые слова: {len(KEYWORDS)} шт\n"
+        f"🍪 Обновление cookie: 🟢 (2 часа)\n"
+        f"📊 SEO мониторинг: 🟢 (6 часов)\n"
+        f"📋 /help — команды"
     )
-    log.info("Bot ishga tushdi!")
+    log.info("Бот запущен!")
 
 
 async def main():

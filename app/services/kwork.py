@@ -1,4 +1,4 @@
-"""Kwork.ru bilan ishlash — monitoring, SEO, javob yuborish."""
+"""Работа с Kwork.ru — мониторинг, SEO, отправка откликов."""
 import asyncio
 import re
 import random
@@ -18,7 +18,7 @@ def escape_html(text: str) -> str:
 
 
 async def get_full_description(url: str) -> str:
-    """Proekt sahifasidan to'liq tavsifni oladi."""
+    """Получает полное описание проекта со страницы."""
     if not state.page:
         return ""
     try:
@@ -35,12 +35,12 @@ async def get_full_description(url: str) -> str:
         }""")
         return desc or ""
     except Exception as e:
-        log.warning("Description xato [%s]: %s", url, e)
+        log.warning("Ошибка описания [%s]: %s", url, e)
         return ""
 
 
 async def check_all_projects(notify_fn) -> int:
-    """Barcha kalit so'zlar bo'yicha yangi proektlarni tekshiradi."""
+    """Проверяет новые проекты по всем ключевым словам."""
     if not state.page:
         return 0
 
@@ -56,7 +56,7 @@ async def check_all_projects(notify_fn) -> int:
             await asyncio.sleep(3)
 
             if "login" in state.page.url:
-                await notify_fn("⚠️ Session tugagan! Cookie yangilash kerak.")
+                await notify_fn("⚠️ Сессия истекла! Нужно обновить cookie.")
                 return total_new
 
             projects_data = await state.page.evaluate("""() => {
@@ -97,14 +97,15 @@ async def check_all_projects(notify_fn) -> int:
                         desc = p["desc"]
 
                     desc_short = escape_html(desc)[:800]
+                    offers_text = f"📊 Предложений: {p['offers']}" if p["offers"] < 999 else ""
                     msg = (
                         f"🆕 <b>{p['title']}</b>\n\n"
                         f"📝 {desc_short}\n\n"
                         f"💰 {p['price']}\n"
-                        f"{'📊 Предложений: ' + str(p['offers']) if p['offers'] < 999 else ''}\n"
+                        f"{offers_text}\n"
                         f"ℹ️ {p['timeText']}\n\n"
-                        f"🔍 Kalit so'z: <code>{kw}</code>\n"
-                        f"🔗 <a href=\"{full_url}\">Proektga o'tish</a>"
+                        f"🔍 Ключевое слово: <code>{kw}</code>\n"
+                        f"🔗 <a href=\"{full_url}\">Открыть проект</a>"
                     )
                     await notify_fn(msg)
                     state.stats["projects_sent"] += 1
@@ -117,18 +118,18 @@ async def check_all_projects(notify_fn) -> int:
                         )
                     await asyncio.sleep(1)
                 except Exception as e:
-                    log.warning("Card xato: %s", e)
+                    log.warning("Ошибка карточки: %s", e)
 
             await asyncio.sleep(random.uniform(2, 4))
         except Exception as e:
             state.stats["errors"] += 1
-            log.error("Project check xato [%s]: %s", kw, e)
+            log.error("Ошибка проверки [%s]: %s", kw, e)
 
     return total_new
 
 
 async def send_response(url: str, response_text: str, price: str) -> bool:
-    """Kwork proektga javob yuboradi (inson simulatsiyasi bilan)."""
+    """Отправляет отклик на проект (с имитацией человека)."""
     if not state.page:
         return False
     try:
@@ -180,19 +181,19 @@ async def send_response(url: str, response_text: str, price: str) -> bool:
             return True
     except Exception as e:
         state.stats["errors"] += 1
-        log.error("Javob xato: %s", e)
+        log.error("Ошибка отклика: %s", e)
     return False
 
 
 async def check_inbox(notify_fn):
-    """Inbox dagi yangi xabarlarni tekshiradi."""
+    """Проверяет новые сообщения во входящих."""
     if not state.page:
         return
     try:
         await state.page.goto("https://kwork.ru/inbox", timeout=60_000, wait_until="domcontentloaded")
         await asyncio.sleep(3)
         if "login" in state.page.url:
-            await notify_fn("⚠️ Session tugagan!")
+            await notify_fn("⚠️ Сессия истекла!")
             return
 
         state.stats["inbox_checks"] += 1
@@ -219,17 +220,17 @@ async def check_inbox(notify_fn):
                 state.prev_inbox_state[user] = current_hash
                 state.stats["new_messages"] += 1
                 await notify_fn(
-                    f"💬 <b>Yangi xabar!</b>\n\n👤 <b>{user}</b>\n🕐 {date}\n\n"
-                    f"📩 {msg}\n\n🔗 <a href=\"https://kwork.ru/inbox\">Inbox</a>"
+                    f"💬 <b>Новое сообщение!</b>\n\n👤 <b>{user}</b>\n🕐 {date}\n\n"
+                    f"📩 {msg}\n\n🔗 <a href=\"https://kwork.ru/inbox\">Входящие</a>"
                 )
                 await asyncio.sleep(0.5)
     except Exception as e:
         state.stats["errors"] += 1
-        log.error("Inbox xato: %s", e)
+        log.error("Ошибка входящих: %s", e)
 
 
 async def online_ping():
-    """Online holatni saqlash uchun sahifa ochadi."""
+    """Поддерживает онлайн статус на Kwork."""
     if not state.page:
         return
     try:
@@ -248,21 +249,21 @@ async def online_ping():
                 await human_scroll(state.page)
 
         state.stats["online_visits"] += 1
-        log.info("Online ping: %s", url)
+        log.info("Онлайн пинг: %s", url)
     except Exception as e:
         state.stats["errors"] += 1
-        log.error("Online xato: %s", e)
+        log.error("Ошибка онлайн: %s", e)
 
 
 async def check_seo() -> str:
-    """Kworklarning qidiruv pozitsiyasini tekshiradi."""
+    """Проверяет позиции кворков в поиске."""
     if not state.page:
-        return "❌ Brauzer ishlamayapti"
+        return "❌ Браузер не запущен"
     try:
         await state.page.goto("https://kwork.ru/manage_kworks", timeout=60_000, wait_until="domcontentloaded")
         await asyncio.sleep(3)
         if "login" in state.page.url:
-            return "⚠️ Session tugagan!"
+            return "⚠️ Сессия истекла!"
 
         await state.page.evaluate("window.scrollTo(0, document.body.scrollHeight)")
         await asyncio.sleep(2)
@@ -279,7 +280,7 @@ async def check_seo() -> str:
         }""")
 
         if not my_kworks:
-            return "📭 Kworklar topilmadi."
+            return "📭 Кворки не найдены."
 
         STOP_WORDS = {
             "для", "на", "под", "или", "и", "в", "с", "из", "от", "по", "к",
@@ -289,7 +290,7 @@ async def check_seo() -> str:
             "сайта", "приложения", "языке", "готовой", "базе",
         }
 
-        results = [f"📊 <b>SEO Pozitsiyalar</b>\n", f"🔍 Kworklar: {len(my_kworks)} ta\n"]
+        results = [f"📊 <b>SEO Позиции</b>\n", f"🔍 Кворков: {len(my_kworks)} шт\n"]
 
         for kw in my_kworks[:10]:
             tech_words = re.findall(
@@ -304,14 +305,14 @@ async def check_seo() -> str:
 
             pos = await _find_position(search_term, kw["id"])
             emoji = "🥇" if 0 < pos <= 3 else "🥈" if pos <= 10 else "🥉" if pos <= 20 else "📍" if pos > 0 else "❌"
-            pos_text = f"#{pos}" if pos > 0 else "topilmadi"
+            pos_text = f"#{pos}" if pos > 0 else "не найден"
             results.append(f"{emoji} <b>{kw['title'][:50]}</b>\n   <code>{search_term}</code> → {pos_text}")
             await asyncio.sleep(2)
 
         return "\n".join(results)
     except Exception as e:
-        log.error("SEO xato: %s", e)
-        return f"❌ SEO xato: {e}"
+        log.error("Ошибка SEO: %s", e)
+        return f"❌ Ошибка SEO: {e}"
 
 
 async def _find_position(search_term: str, kwork_id: str) -> int:
